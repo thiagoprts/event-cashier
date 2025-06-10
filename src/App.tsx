@@ -1,23 +1,45 @@
 import React, { useState, useEffect } from 'react';
 
+// Interfaces for TypeScript type definitions
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+}
+
+interface OrderItem extends Product {
+  quantity: number;
+}
+
+interface ProductFormProps {
+  products: Product[];
+  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+}
+
+interface OrderManagerProps {
+  products: Product[];
+  currentOrder: OrderItem[];
+  setCurrentOrder: React.Dispatch<React.SetStateAction<OrderItem[]>>;
+}
+
 // Main App Component
 function App() {
   // State to manage products, loaded from localStorage or initialized as empty
   // Os produtos são salvos automaticamente no localStorage para persistência de dados.
-  const [products, setProducts] = useState(() => {
+  const [products, setProducts] = useState<Product[]>(() => {
     const savedProducts = localStorage.getItem('products');
     return savedProducts ? JSON.parse(savedProducts) : [];
   });
 
   // State to manage the current order, loaded from localStorage or initialized as empty
   // O pedido atual é salvo automaticamente no localStorage para persistência de dados.
-  const [currentOrder, setCurrentOrder] = useState(() => {
+  const [currentOrder, setCurrentOrder] = useState<OrderItem[]>(() => {
     const savedOrder = localStorage.getItem('currentOrder');
     return savedOrder ? JSON.parse(savedOrder) : [];
   });
 
   // State to manage the active tab
-  const [activeTab, setActiveTab] = useState('order'); // 'order' or 'products'
+  const [activeTab, setActiveTab] = useState<'order' | 'products'>('order'); // 'order' or 'products'
 
   // Effect to save products to localStorage whenever they change
   useEffect(() => {
@@ -72,13 +94,13 @@ function App() {
 }
 
 // Product Form Component
-function ProductForm({ products, setProducts }) {
-  const [productName, setProductName] = useState('');
-  const [productPrice, setProductPrice] = useState('');
-  const [message, setMessage] = useState({ text: '', type: '' }); // For success/error messages
+function ProductForm({ products, setProducts }: ProductFormProps) {
+  const [productName, setProductName] = useState<string>('');
+  const [productPrice, setProductPrice] = useState<string>('');
+  const [message, setMessage] = useState<{ text: string; type: string }>({ text: '', type: '' }); // For success/error messages
 
   // Handles adding a new product
-  const handleAddProduct = (e) => {
+  const handleAddProduct = (e: React.FormEvent) => {
     e.preventDefault();
     // Validate inputs
     if (!productName.trim() || isNaN(parseFloat(productPrice)) || parseFloat(productPrice) <= 0) {
@@ -86,7 +108,7 @@ function ProductForm({ products, setProducts }) {
       return;
     }
 
-    const newProduct = {
+    const newProduct: Product = {
       id: Date.now(), // Unique ID for the product
       name: productName.trim(),
       price: parseFloat(productPrice),
@@ -100,7 +122,7 @@ function ProductForm({ products, setProducts }) {
   };
 
   // Handles deleting a product
-  const handleDeleteProduct = (id) => {
+  const handleDeleteProduct = (id: number) => {
     setProducts(products.filter(product => product.id !== id)); // Remove product by ID
     setMessage({ text: 'Produto removido com sucesso!', type: 'success' }); // Show success message
     setTimeout(() => setMessage({ text: '', type: '' }), 3000); // Clear message after 3 seconds
@@ -182,9 +204,9 @@ function ProductForm({ products, setProducts }) {
 }
 
 // Order Manager Component
-function OrderManager({ products, currentOrder, setCurrentOrder }) {
+function OrderManager({ products, currentOrder, setCurrentOrder }: OrderManagerProps) {
   // Function to add a product to the order or update its quantity
-  const addToOrder = (productToAdd) => {
+  const addToOrder = (productToAdd: Product) => {
     const existingItemIndex = currentOrder.findIndex(item => item.id === productToAdd.id);
 
     if (existingItemIndex > -1) {
@@ -199,7 +221,7 @@ function OrderManager({ products, currentOrder, setCurrentOrder }) {
   };
 
   // Function to update the quantity of an item in the order
-  const updateQuantity = (id, newQuantity) => {
+  const updateQuantity = (id: number, newQuantity: number) => {
     if (newQuantity <= 0) {
       removeFromOrder(id); // If quantity is 0 or less, remove the item
       return;
@@ -212,7 +234,7 @@ function OrderManager({ products, currentOrder, setCurrentOrder }) {
   };
 
   // Function to remove a product from the order
-  const removeFromOrder = (id) => {
+  const removeFromOrder = (id: number) => {
     setCurrentOrder(currentOrder.filter(item => item.id !== id));
   };
 
